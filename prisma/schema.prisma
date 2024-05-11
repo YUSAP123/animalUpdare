@@ -20,6 +20,14 @@ model Specie {
   profile Profile?
 }
 
+model User {
+  id Int @id @default(autoincrement())
+  fullName String?
+  phoneNumber Int
+  userName String @unique
+  password String
+}
+
 model Profile {
   id           Int       @id @default(autoincrement())
   colour       String?

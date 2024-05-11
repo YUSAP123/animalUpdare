@@ -3,9 +3,18 @@ import { Label } from "@radix-ui/react-dropdown-menu";
 import { NextAuthOptions } from "next-auth";
 import  CredentialsProvider  from "next-auth/providers/credentials";
 import db from "./db";
+import { compare } from "bcrypt"
 
 export const authOptions: NextAuthOptions ={
     adapter: PrismaAdapter(db),
+    secret: process.env.NEXTAUTH_SECRET, 
+    session: {
+      strategy: "jwt"
+      
+    },
+
+    pages: {signIn: "/auth/login"},
+
     providers: [
         CredentialsProvider({
           // The name to display on the sign in form (e.g. 'Sign in with...')
@@ -15,32 +24,63 @@ export const authOptions: NextAuthOptions ={
           // e.g. domain, username, password, 2FA token, etc.
           // You can pass any HTML attribute to the <input> tag through the object.
           credentials: {
-            username: { label: "Username", type: "text", placeholder: "jsmith" },
+            userName: { label: "Username", type: "text", placeholder: "jsmith" },
             password: { label: "Password", type: "password" }
           },
-          async authorize(credentials, req) {
-            // You need to provide your own logic here that takes the credentials
-            // submitted and returns either a object representing a user or value
-            // that is false/null if the credentials are invalid.
-            // e.g. return { id: 1, name: 'J Smith', email: 'jsmith@example.com' }
-            // You can also use the `req` object to obtain additional parameters
-            // (i.e., the request IP address)
-            const res = await fetch("/your/endpoint", {
-              method: 'POST',
-              body: JSON.stringify(credentials),
-              headers: { "Content-Type": "application/json" }
-            })
-            const user = await res.json()
-      
-            // If no error and we have user data, return it
-            if (res.ok && user) {
-              return user
-            }
-            // Return null if user data could not be retrieved
+          async authorize(credentials) {
+            console.log(credentials)
+           if (!credentials?.userName || !credentials?.password) {
             return null
+           }
+            
+           const existData=await db.user.findUnique({
+            where: {
+              userName: credentials?.userName
+            }
+           })
+          //  console.log(existData)
+
+           if (!existData) {
+            return null
+           }
+
+           const pass=await compare(credentials.password, existData.password)
+           if (!pass) {
+            return null
+           }
+      
+          //  console.log(existData)
+            // Return null if user data could not be retrieved
+            return {
+              id: `${existData.id}`,
+              name: `${existData.fullName}`,
+              userName: `${existData.userName}`,
+              phoneNumber: `${existData.phoneNumber}`
+
+            }
           }
         })
-      ]
+      ],
+      callbacks: {
+        async jwt({token, user}) {
+          if (user) {
+            return{
+              ...token,
+              pnoneNumber: user.phoneNumber,
+
+            }
+          }
+          return token
+        },
+async session({session, token}){
+  return{...session,
+    phoneNumber: token.phoneNumber
+  }
+}
+
+        
+      },
+
 
 }
 
