@@ -13,37 +13,38 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Specie {
-  id      Int      @id @default(autoincrement())
-  name    String?  @unique
-  clan    String   @unique
-  profile Profile?
+
+model Clan {
+  id Int @id @default(autoincrement())
+  name Int @unique
+  nickName String? 
+  Rabit Rabit[]
 }
 
-model User {
+model Rabit {
   id Int @id @default(autoincrement())
-  fullName String?
-  phoneNumber Int
-  userName String @unique
-  password String
+  name String?
+  ClanId Int
+  Clan Clan @relation(fields: [ClanId], references: [id])
+  mother Int?
+  father Int?
+  ofspring Int?
+  gender Gender @default(BUCK)
+  Profile Profile[]
 }
 
 model Profile {
-  id           Int       @id @default(autoincrement())
-  colour       String?
-  dateOfBirth  DateTime?
-  maleParent   Int?
-  femaleParent Int?
-  specie       Specie    @relation(fields: [specieId], references: [id])
-  specieId     Int       @unique
+  id Int @id @default(autoincrement())
+  color String
+  size Int
+  dob DateTime @default(now())
+  rabitId Int
+  Rabit Rabit @relation(fields: [rabitId], references: [id])
+
 }
 
 
-model Mating{
-  id Int @id @default(autoincrement())
-  maleMated Int
-  femaleMated Int 
-  dateMated DateTime @default(now())
-  maternity DateTime
-  
+enum Gender {
+  BUCK
+  DOE
 }

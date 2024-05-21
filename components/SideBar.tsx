@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import React from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import { UrlObject } from 'url'
 
 export default function SideBar({link}) {
     console.log(link)
@@ -15,7 +16,7 @@ export default function SideBar({link}) {
 
         </div>
         <div className='flex flex-col px-4 gap-6 mt-16'>
-{link.map(e=> <Link  className="text-primary hover:text-primary-foreground" href={e.Link}>{e.name}</Link>)}
+{link.map((e: { link: React.Key | null | undefined; Link: string | UrlObject; name: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined })=> <Link key={e.link}  className="text-primary hover:text-primary-foreground" href={e.Link}>{e.name}</Link>)}
     </div>
     </div>
   )
